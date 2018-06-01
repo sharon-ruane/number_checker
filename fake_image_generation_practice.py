@@ -4,7 +4,7 @@ from PIL import ImageFont
 import os
 import random
 
-def generate_phone_number():
+def generate_phone_number(numbers):
     return ''.join(random.choice(numbers) for i in range(random.randint(7, 10)))
 
 r = lambda: random.randint(40,255)

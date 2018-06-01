@@ -48,18 +48,25 @@ def generate_font_dictionary(FONT_DIR):
 
 def add_text(thing_getting_drawn_on, width, height, numfonts, my_text):
     fnt = ImageFont.truetype(font_index[random.randint(0, numfonts)], random.randint(20,50))
+    smallfnt = ImageFont.truetype(font_index[random.randint(0, numfonts)], random.randint(10, 20))
     h, s, l = random.random(), 0.5 + random.random() / 2.0, 0.4 + random.random() / 5.0
     r, g, b = [int(256 * i) for i in colorsys.hls_to_rgb(h, l, s)]
     # removed the colour generator so the colours are always bright now!
-    if fnt.getsize(num)[0] <= (width // 2 + 10):
-        thing_getting_drawn_on.text((random.randint(0, (width // 2)), random.randint(0, height // 1.3)),
-                my_text, fill=(r, g, b, 255),
-                font= fnt)
-    else:
-        thing_getting_drawn_on.text((random.randint(0, (width // 2)), random.randint(0, height // 1.3)),
-        my_text, fill = (r, g, b, 255),
-        font = ImageFont.truetype(font_index[random.randint(0, numfonts)], random.randint(20, 25)))
 
+    place_x = random.randint(0, width // 2)
+    place_y = random.randint(0, height // 1.3)
+
+    if fnt.getsize(my_text)[0] <= (width // 2 + 10):
+        thing_getting_drawn_on.text((place_x, place_y), my_text, fill=(r, g, b, 255), font=fnt)
+        max_x = place_x + fnt.getsize(my_text)[0]
+        max_y = place_y + fnt.getsize(my_text)[1]
+    else:
+        thing_getting_drawn_on.text((place_x, place_y), my_text, fill=(r, g, b, 255),
+        font= smallfnt)
+        max_x = place_x + smallfnt.getsize(my_text)[0]
+        max_y = place_y + smallfnt.getsize(my_text)[1]
+
+    return place_x, place_y, max_x, max_y
 
 
 
@@ -87,16 +94,21 @@ if not os.path.isdir(num_pics):
     os.makedirs(num_pics)
 
 
-
-for i in range(0, 3):
-    num = str(generate_phone_number())
-    big_pre_pic = Image.open(piclist[random.randint(0, len(piclist)-1)]).convert('RGBA')
-    cropped_pre_pic = crop_image(big_pre_pic, size=[230, 230])
-    txt_im = Image.new('RGBA', cropped_pre_pic.size, (255, 255, 255, 0))
-    text_pic = ImageDraw.Draw(txt_im)
-    add_text(text_pic, cropped_pre_pic.size[0], cropped_pre_pic.size[1], numfonts, num)
-    new_pic = Image.alpha_composite(cropped_pre_pic, txt_im).convert('RGB')
-    new_pic.show()
+def Generate_Image(model,MAX_LEN,first_char_probs,index_to_char,char_to_index,num_chars,end_index):
+    generated = index_to_char[ChooseCharacter(first_char_probs)]
+    #print(generated)
+    while True:
+        input = np.zeros((1, min(len(generated),MAX_LEN), num_chars), dtype=np.bool)  # this is making a BOOLEAN matrix,not sure why it's this shape
+        input_index_offset = max(0, len(generated)- MAX_LEN)  #
+        for i in range(max(0,len(generated)-MAX_LEN),len(generated)):  # input_index_offset # whaaat?
+            input[0, i-input_index_offset, char_to_index[generated[i]]]=1 ## this fills the input matric with the info so far
+        prediction = model.predict(input, batch_size=1,verbose=0)
+        prediction_b = prediction[0].astype('float64')
+        nextindex = ChooseCharacter(prediction_b)
+        if nextindex == end_index or len(generated) == 100:  # start -- let rant for longer later!
+            return generated
+        nextchar = index_to_char[nextindex]
+        generated = generated + nextchar
 
 
 

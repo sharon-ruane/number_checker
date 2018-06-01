@@ -127,9 +127,9 @@ for i in range(0, 5):
     new_pic.show()
 
     x_place = 0
-    for i in range(0, (cropped_pre_pic.size[0]//WINDOW_SIZE[0])):
+    for p in range(0, (cropped_pre_pic.size[0]//WINDOW_SIZE[0])):
         y_place = 0
-        for j in range(0, (cropped_pre_pic.size[1]//WINDOW_SIZE[1])):
+        for q in range(0, (cropped_pre_pic.size[1]//WINDOW_SIZE[1])):
             mini_pic = new_pic.crop(box=(x_place, y_place, x_place + WINDOW_SIZE[0], y_place + WINDOW_SIZE[1]))
             window_rectangle = Rectangle(x_place, y_place, x_place + WINDOW_SIZE[0], y_place + WINDOW_SIZE[1])
 
