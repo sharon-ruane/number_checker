@@ -1,7 +1,7 @@
 import os
-import numpy as np
 import random
 import colorsys
+import numpy as np
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
@@ -80,7 +80,7 @@ def crop_image(im,size):
 def gen_fake_image(image_list, font_index, numbers):
     num = str(generate_phone_number(numbers))
     big_pre_pic = Image.open(image_list[random.randint(0, len(image_list)-1)]).convert('RGBA')
-    cropped_pre_pic = crop_image(big_pre_pic, size=[230, 230])
+    cropped_pre_pic = crop_image(big_pre_pic, size=[245, 245])
     txt_im = Image.new('RGBA', cropped_pre_pic.size, (255, 255, 255, 0))
     text_pic = ImageDraw.Draw(txt_im)
     min_x, min_y, max_x, max_y = add_text(text_pic, cropped_pre_pic.size[0], cropped_pre_pic.size[1], num, font_index)
@@ -134,12 +134,12 @@ def Image_Batch_Generator(image_list, font_index, batch_size, WINDOW_SIZE, numbe
                     window_rectangle = Rectangle(x_place, y_place, x_place + WINDOW_SIZE[0], y_place + WINDOW_SIZE[1])
 
                     if (intersection_area(window_rectangle, font_rectangle) >= font_area * 0.075) and (pos_counter < batch_size//2):
-                        selections.append(np.asarray(mini_pic))
+                        selections.append(np.asarray(mini_pic).astype(float)/255)
                         labels.append(1)
                         pos_counter += 1
 
                     elif (intersection_area(window_rectangle, font_rectangle) <= font_area * 0.075) and (neg_counter < batch_size//2):
-                        selections.append(np.asarray(mini_pic))
+                        selections.append(np.asarray(mini_pic).astype(float)/255)
                         labels.append(0)
                         neg_counter += 1
 
@@ -148,9 +148,9 @@ def Image_Batch_Generator(image_list, font_index, batch_size, WINDOW_SIZE, numbe
 
         selections = np.asarray(selections)
         labels = np.asarray(labels)
-        labels_cat = to_categorical(labels)  # remove if doing binary_crossentropy and output labels instead
+        #labels_cat = to_categorical(labels)  # remove if doing binary_crossentropy and output labels instead
 
-        yield selections, labels_cat
+        yield selections, labels
 
 
 
