@@ -12,7 +12,7 @@ from num_find_training_functions import gen_fake_image, generate_font_dictionary
 # and also outputs the label as a numpy array, which fills in leftover spaces with 'blanks'
 
 
-def Close_Up_Image_Batch_Generator(image_list, font_index, batch_size, numbers, end_index):
+def Close_Up_Image_Batch_Generator(image_list, font_index, batch_size, printing_numbers, guessing_numbers, end_index):
     # I want an array of images, 3*width*height*batchsize to feed into the data set
     # I also want array of corresponding Y/N values
     print('Spawning...')
@@ -22,7 +22,7 @@ def Close_Up_Image_Batch_Generator(image_list, font_index, batch_size, numbers, 
         labels = []
 
         while len(selections) < batch_size:
-            im, min_x, min_y, max_x, max_y, num = gen_fake_image(image_list, font_index, numbers)
+            im, min_x, min_y, max_x, max_y, num = gen_fake_image(image_list, font_index, printing_numbers)
             new_min_x = min_x - random.randint(0, 20)
             new_min_y = min_y - random.randint(0, 20)
             new_max_x = max_x + random.randint(0, 20)
@@ -68,15 +68,14 @@ def Close_Up_Image_Batch_Generator(image_list, font_index, batch_size, numbers, 
 
         selections = np.asarray(selections)
         labels = np.asarray(labels)
-        yield selections, labels
-
+        labels_cat = to_categorical(labels)
+        yield selections, labels_cat
 
 
 
 #
 # BATCH_SIZE = 3
 # bg_pics_dir = "/home/iolie/PycharmProjects/keras__practice/number_checker/lfw_mix"
-#
 #
 #
 # printing_numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -100,10 +99,12 @@ def Close_Up_Image_Batch_Generator(image_list, font_index, batch_size, numbers, 
 # index_to_char = {i: ch for i, ch in enumerate(guessing_numbers)}
 # end_index = max(index_to_char.keys())+1
 # #
-# gen = Close_Up_Image_Batch_Generator(piclist, font_index, BATCH_SIZE, printing_numbers, end_index)
+# gen = Close_Up_Image_Batch_Generator(piclist, font_index, BATCH_SIZE, printing_numbers, guessing_numbers, end_index)
 # #
-# close_ups, nums = gen.next()
+# close_ups, nums, nums_cat = gen.next()
 #
 # print(close_ups.shape)
 # print(nums.shape)
 # print(nums)
+# print(nums_cat.shape)
+# print(nums_cat)
