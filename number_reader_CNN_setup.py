@@ -3,10 +3,11 @@
 
 import os
 import keras
+import numpy as np
 from keras import optimizers
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D
-from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Dense, Dropout, Activation, Flatten, Reshape
 from number_reader_training_functions import Close_Up_Image_Batch_Generator
 from num_find_training_functions import generate_font_dictionary, shuffle_split_list
 
@@ -36,10 +37,10 @@ for dirpath, subdirs, files in os.walk(bg_pics_dir):
             piclist.append(os.path.join(dirpath, f))
 
 
-BATCH_SIZE = 128
-output_shape = ((len(guessing_numbers) + 1), 10)
+BATCH_SIZE = 12
+output_shape = (10, (len(guessing_numbers) + 1))
 print(output_shape)
-
+print(np.prod(output_shape))
 
 FONT_DIR = "/usr/share/fonts/truetype"
 font_index = generate_font_dictionary(FONT_DIR)
@@ -65,11 +66,8 @@ model.add(Activation('relu'))
 # model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 
-model.add(Conv2D(64, (3, 3), padding='same'))
+model.add(Conv2D(64, (3, 3), padding='valid'))
 model.add(Activation('relu'))
-# model.add(Conv2D(128, (2, 2)))
-# model.add(Activation('relu'))
-# model.add(MaxPooling2D(pool_size=(2, 2)))
 model.add(Dropout(0.25))
 
 model.add(Flatten())
@@ -78,16 +76,12 @@ model.add(Activation('relu'))
 model.add(Dropout(0.5))
 #model.add(Dense(num_outputs))
 
-from keras.activations import softmax
-def softMaxAxis1(x):
-    return softmax(x, axis=-1)
-
-model.add(Dense(output_shape, activation=softMaxAxis1))
-# model.add(Activation('softmax', axis=-1))
-#model.add(Activation('sigmoid'))
+model.add(Dense(np.prod(output_shape), activation='linear'))
+model.add(Reshape(output_shape))
+model.add(Activation('softmax'))
 adam = optimizers.Adam()
 
-model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
+model.compile(loss='categorical_crossentropy', optimizer=adam)
 checkpointer = keras.callbacks.ModelCheckpoint(filepath='latestweights.hdf5', verbose=1, save_best_only=False)
 lowest_loss = 2
 
